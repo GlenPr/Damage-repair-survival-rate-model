@@ -2,10 +2,12 @@
 For modelling multivariate longitudinal binary data with survival, for example health deficits.
 
 # Purpose
-To analyze transitions and their dependence on age and the frailty index (FI; defined as average of binary values). Original purpose was to look for tipping point behaviour.
+To analyze transitions and their dependence on age and the frailty index (FI; defined as average of binary values). Original purpose was to look for changes in robustness and resilience. It ultimately found a tipping point.
 
 # Background
 The FI is defined as the average over all binary values an individual has (at a particular time point). Damage is defined by the transition 0->1. Repair is defined by the transition 1->0. Survival is a first passage event e.g. death.
+
+Robustness is defined as the ability to resist damage transitions while resistance is the ability to repair. Research in the field of geroscience has found evidence that both robustness and resilience decrease with age and increasing frailty index. We sought to check this quantitatively using this package.
 
 # Installation
 Download and open in R. The functions are ready to go (.R). The vignette works in R studio (.Rmd).
