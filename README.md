@@ -8,7 +8,7 @@ To analyze transitions and their dependence on age and the frailty index (FI; de
 The FI is defined as the average over all binary values an individual has (at a particular time point). Damage is defined by the transition 0->1. Repair is defined by the transition 1->0. Survival is a first passage event e.g. death.
 
 # Installation
-Download and open in R. The functions are ready to go (.R). The script works in R studio (.Rmd).
+Download and open in R. The functions are ready to go (.R). The vignette works in R studio (.Rmd).
 
 # Dependencies
 -survival
