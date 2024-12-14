@@ -1,0 +1,164 @@
+---
+title: "FI Dynamics Vignette"
+output: html_notebook
+---
+
+Dec 2024 Glen Pridham
+
+instructions and sample code for fitting model
+
+please see https://arxiv.org/abs/2412.07795 for more info and citation info
+
+summary: fits damage, repair and mortality probabilities to longitudinal binary deficit data
+data needed are:
+  1. binary data stored in a data.frame. you need some number, p, of binary deficits measured now and the same number, p, measured at some followup time. the followup must be %s_next where %s is the original name. binary data are size (N x times) individual measurement rows and 2*p variable columns
+      -note: if you have > 2 timepoints, stack them. e.g. if I measure Bob 4 times I should have 3 rows for him: 1st measurement with 2nd measurement followup, 2nd measurement with 3rd measurement followup, and 3rd measurement with 4th measurement followup.
+      
+optional data but must be entered:
+  1. survival data marking an end to the individual's observations. if you have no survival data you must enter the final observation times as a survival object. survival data are Surv() objects of size N individual rows and 3 columns (start, stop and status; set start = 0 if not provided)
+  
+what the script does:
+  1. fits the model, bootstraps and saves the output
+  2. generates diagnostic plots
+  3. generates a synthetic population via simulation
+  
+packages needed:
+  1. survival
+  2. ggplot2 (for plots, you may be able to avoid this by setting skipPlots=T in DiagnoseModel.exp)
+
+recommended packages:
+  1. metr (for nullcline plot)
+  2. ggridges (for ridge plots)
+  3. mgcv (for crossing statistic)
+
+#step 1. load in functions
+set directory where .R file is and where you want to save/load from
+```{r}
+gRootName = "fi_dynamics"
+gOutputDir = "C:/Users/Glen/OneDrive - Dalhousie University/analysis/fi_dynamics" #enter analysis directory here
+gDataDir = "C:/Users/Glen/OneDrive - Dalhousie University/analysis/fi_dynamics/data" #where you want to save/load from
+
+source(sprintf("%s/fi_dynamics_github.R",gOutputDir),verbose=0)
+library(metR)
+```
+#step 2. load in data
+the model requires longitudinal (measurement and followup) binary data and survival data (this can be faked)
+for example, generate some artificial data
+```{r}
+N = 1000
+p = 30 #number of deficits
+age = rnorm(N,70,5)
+dt = 1 #followup time
+
+baseline = matrix(NA,nrow=N,ncol=p)
+colnames(baseline)=sprintf("b%02d",1:ncol(baseline))
+followup = matrix(NA,nrow=N,ncol=p)
+colnames(followup)=sprintf("%s_next",colnames(baseline)) #NOTE: you MUST name the followup the same as baseline but with _next
+#randomly generate baseline:
+for (j in 1:ncol(baseline)) baseline[,j] = sample(c(0,1),N,T,prob=c(.8,.2))
+#generate followup assuming a simple model (roughly approximates the values we got in the paper but exaggerated a bit)
+#damage rate = exp( -6 + 3.5*fi + 2.5*age/100)
+#repair rate = exp( -1 - 0.6*fi - age/100)
+#approximate prob = rate * dt
+#fi = mean( baseline )
+fi = apply(baseline,1,mean,na.rm=T)
+for (j in 1:ncol(followup)) 
+{
+  #carry forward previous value
+  followup[,j] = baseline[,j]
+  
+  #randomly repair:
+  damaged = baseline[,j] == 1
+  followup[damaged,j] = 1 - as.integer(runif(sum(damaged),0,1) <= exp(-1 - 0.6*fi[damaged] - age[damaged]/100))*dt
+  #randomly damage:
+  repaired = baseline[,j] == 0
+  followup[repaired,j] = as.integer(runif(sum(repaired),0,1) <=  exp(-4 + 3.5*fi[repaired] + 2.5*age[repaired]/100))*dt
+}
+```
+
+illustrate the effect of the FI
+```{r}
+fi_baseline = apply(baseline,1,mean)
+fi_followup = apply(followup,1,mean)
+plot(fi_baseline,fi_followup-fi_baseline,xlab="FI",ylab=bquote(Delta*"FI"))
+```
+
+we also need survival
+for simplicity let's just assume everybody is censored at the end of the study
+```{r}
+s = Surv(age,age+dt,event=rep(0,N))
+```
+
+
+
+prep the data
+we need baseline and followup, a unique ID column, as well as age and an indicator variable for when the last measurement was
+```{r}
+data = data.frame(baseline,followup)
+data[,"id"] = 1:nrow(data) #used for trajectories
+data[,"age"] = age
+data[,"age_next"] = age + dt
+data[,"last_measurement"] = T #only 1 followup so everybody true
+```
+
+#step 3. fit Model
+now fit a model to the data
+this function will bootstrap fit
+```{r}
+#the first 5 are needed, the rest are options to show you 
+m = DiagnoseModel.exp(data = data,
+                      fiVar=colnames(baseline),
+                      s=s,
+                      dt=dt,
+                      GenBasis=GenBasisDefault, #you can have any basis function of the FI here
+                      nboot=10, #number of bootstraps to perform (default: 100)
+                      save=F, #you can optionally save and load
+                      load=F,
+                      file=sprintf("%s/sim_fi_dynamics.rds",gDataDir), #where to look to load and where to save (will overwrite)
+                      skipPlots=F, #if you don't want plots / don't have the libraries you can skip this (it can also be slow)
+                      verbose=T, #prints lots of info, can be spammy
+                      simMultiplier=1 #larger = higher precision, slower simulation (default: 10)
+                      )
+```
+
+
+#step 4. inspect results
+the estimated parameter values are stored in a matrix where each row is a different bootstrap
+since we had no survival the hazard estimates will be nonsense, only that the baseline hazard has to be relatively small
+
+Here I compare the estimates to the known values to see they're sane.
+```{r}
+par = apply(m$par,2,mean)
+se = apply(m$par,2,sd)
+
+#compare to ground truth from sim
+#damage rate = exp( -6 + 3.5*fi + 2.5*age/100)
+#repair rate = exp( -1 - 0.6*fi - age/100)
+gt = c(-6,3.5,2.5/100,0,-1,-.6,-1/100,0,-1,0,0,0)
+
+plot(gt[1:4],par[1:4],main="Damage parameters",xlab="Ground truth",ylab="Estimate",ylim=range(c(gt[1:4],par[1:4])))
+arrows(gt[1:4],par[1:4]-se[1:4],gt[1:4],par[1:4]+se[1:4], angle = 90, code = 3, length = 0.001)
+abline(0,1,lty=2)
+
+plot(gt[1:4+4],par[1:4+4],main="Repair parameters",xlab="Ground truth",ylab="Estimate",ylim=range(c(gt[1:4+4],par[1:4+4])))
+arrows(gt[1:4+4],par[1:4+4]-se[1:4+4],gt[1:4+4],par[1:4+4]+se[1:4+4], angle = 90, code = 3, length = 0.001)
+abline(0,1,lty=2)
+
+plot(gt[1:4+8],par[1:4+8],main="Hazard parameters",xlab="Ground truth",ylab="Estimate",ylim=range(c(gt[1:4+8],par[1:4+8])))
+arrows(gt[1:4+8],par[1:4+8]-se[1:4+8],gt[1:4+8],par[1:4+8]+se[1:4+8], angle = 90, code = 3, length = 0.001)
+abline(0,1,lty=2)
+```
+
+
+
+the primary diagnostic comes from 9 "key" plots - you'll need ggplot2 for these
+-the S plots are survival plots for each type of event (death, damage, repair)
+
+```{r}
+for (i in 1:length(m$plots$key))
+{
+  m$plots$key[[i]]
+}
+```
+
+
