@@ -12,9 +12,13 @@ Download and open in R. The functions are ready to go (.R). The script works in 
 
 # Dependencies
 -survival
+
 -ggplot2
+
 -metr (recommended)
+
 -ggridges (recommended)
+
 -mgcv (recommended)
 
 # What it does
