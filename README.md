@@ -10,7 +10,7 @@ The FI is defined as the average over all binary values an individual has (at a 
 Robustness is defined as the ability to resist damage transitions while resistance is the ability to repair. Research in the field of geroscience has found evidence that both robustness and resilience decrease with age and increasing frailty index. We sought to check this quantitatively using this package.
 
 # Installation
-Download and open in R. The functions are ready to go (.R). The vignette works in R studio (.Rmd).
+Download and open in R. The functions are ready to go (.R). The vignette works in RStudio (.Rmd). Works in R v4.2.2 and RStudio 2023.03.0.
 
 # Dependencies
 -survival
@@ -30,11 +30,19 @@ Takes multivariate binary longitudinal data. Originally used to analyse binary h
 Fitting is entirely self-contained in a single function that will bootstrap and generate parameter estimates, errors and diagnostic plots.
 
 # For more information / cite as
-Pridham G, Rockwood K, Rutenberg AD. Dynamical modelling of the frailty index indicates that health reaches a tipping point near age 75. arXiv preprint arXiv:2412.07795. 2024 Dec 2.
+Pridham, G., Rockwood, K. & Rutenberg, A. D. Dynamical modelling of the frailty index indicates that health reaches a tipping point near age 75. arXiv [q-bio.QM] (2024).
+  
 
-@article{pridham2024dynamical,
-  title={Dynamical modelling of the frailty index indicates that health reaches a tipping point near age 75},
-  author={Pridham, Glen and Rockwood, Kenneth and Rutenberg, Andrew D},
-  journal={arXiv preprint arXiv:2412.07795},
-  year={2024}
+@ARTICLE{Pridham2024-su,
+  title         = "Dynamical modelling of the frailty index indicates that
+                   health reaches a tipping point near age 75",
+  author        = "Pridham, Glen and Rockwood, Kenneth and Rutenberg, Andrew D",
+  journal       = "arXiv [q-bio.QM]",
+  month         =  dec,
+  year          =  2024,
+  url           = "https://scholar.google.com/citations?view_op=view_citation&hl=en&citation_for_view=cVHiV0gAAAAJ:ZeXyd9-uunAC",
+  archivePrefix = "arXiv",
+  primaryClass  = "q-bio.QM",
+  eprint        = "2412.07795"
 }
+
