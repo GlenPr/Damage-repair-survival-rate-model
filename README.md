@@ -27,7 +27,7 @@ Download and open in R (no install necessary). The functions are ready to go (.R
 Takes multivariate binary longitudinal data. Originally used to analyse binary health deficits (0: good, 1: bad). Estimates parameters for a log-rate model where the damage, repair and survival rates depend on the current FI and age of the individual. The model must be linear in age but can have arbitrary dependence on the FI; use GenBasis() to determine the number and form of the FI dependence.
 
 # How do I use it?
-Fitting is entirely self-contained in a single function that will bootstrap and generate parameter estimates, errors and diagnostic plots.
+Fitting is entirely self-contained in a single function that will bootstrap and generate parameter estimates, errors and diagnostic plots. Please start with the vignette, it explains dependenceis, how to shape data, and perform the analysis. Runtime is about 5 minutes total. 
 
 # For more information / cite as
 Pridham, G., Rockwood, K. & Rutenberg, A. D. Dynamical modelling of the frailty index indicates that health reaches a tipping point near age 75. arXiv [q-bio.QM] (2024).
