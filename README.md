@@ -10,7 +10,7 @@ The FI is defined as the average over all binary values an individual has (at a 
 Robustness is defined as the ability to resist damage transitions while resistance is the ability to repair. Research in the field of geroscience has found evidence that both robustness and resilience decrease with age and increasing frailty index. We sought to check this quantitatively using this package.
 
 # Installation
-Download and open in R. The functions are ready to go (.R). The vignette works in RStudio (.Rmd). Works in R v4.2.2 and RStudio 2023.03.0.
+Download and open in R (no install necessary). The functions are ready to go (.R). The vignette works in RStudio (.Rmd). Works in R v4.2.2 and RStudio 2023.03.0. Tested on Windows 11.
 
 # Dependencies
 -survival
